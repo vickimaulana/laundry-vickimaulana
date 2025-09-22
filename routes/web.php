@@ -14,7 +14,6 @@ Route::middleware(['auth', 'administrator'])->group(function () {
     Route::resource('level', App\Http\Controllers\LevelController::class);
     Route::resource('user', App\Http\Controllers\UserController::class);
     Route::resource('service', App\Http\Controllers\TypeOfServiceController::class);
-     Route::resource('order', App\Http\Controllers\TransOrderController::class);
 });
 
 Route::middleware(['auth', 'adopt'])->group(function () {
