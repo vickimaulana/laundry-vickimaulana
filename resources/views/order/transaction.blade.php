@@ -756,7 +756,7 @@
                 .map(
                     (transaction) => `
                 <div class="transaction-item">
-                    <h4>${transaction.id} - ${transaction.customer.customer_name}</h4>
+                    <h4>${transaction.order_code} - ${transaction.customer.customer_name}</h4>
                     <p>📞${formatPhoneNumberDynamic(transaction.customer.phone)}</p>
                     <p>🛍️ ${transaction.details
                       .map(
@@ -818,7 +818,7 @@
                       .map(
                         (transaction) => `
                             <div class="transaction-item">
-                                <h4>${transaction.id} - ${
+                                <h4>${transaction.order_code} - ${
                               transaction.customer.customer_name
                             }</h4>
                                 <p>📞 ${formatPhoneNumberDynamic(transaction.customer.phone)}</p>
