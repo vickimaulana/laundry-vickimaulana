@@ -14,10 +14,17 @@ Route::middleware(['auth', 'administrator'])->group(function () {
     Route::resource('level', App\Http\Controllers\LevelController::class);
     Route::resource('user', App\Http\Controllers\UserController::class);
     Route::resource('service', App\Http\Controllers\TypeOfServiceController::class);
-     Route::resource('order', App\Http\Controllers\TransOrderController::class);
 });
 
 Route::middleware(['auth', 'adopt'])->group(function () {
+    Route::post('/transactions', [App\Http\Controllers\TransOrderController::class, 'store']);
+    Route::put('/transactions/{id}', [App\Http\Controllers\TransOrderController::class, 'update']);
+    Route::get('/order-json', [App\Http\Controllers\TransOrderController::class, 'getOrders'])
+    ->name('order.json');
+    Route::get('/order-json/{id}', [App\Http\Controllers\TransOrderController::class, 'getSingleOrder'])
+    ->name('order.json-single');
+    Route::put('/order-json-update-status/{id}', [App\Http\Controllers\TransOrderController::class, 'updateOrderStatus']);
+    Route::get('/order-reports', [App\Http\Controllers\TransOrderController::class, 'reportsJson']);
     Route::resource('customer', App\Http\Controllers\CustomerController::class);
     Route::resource('order', App\Http\Controllers\TransOrderController::class);
     Route::get("print_struk/{id}", [App\Http\Controllers\TransOrderController::class, 'printStruk'])->name('print_struk');
