@@ -69,16 +69,65 @@ class TransOrderController extends Controller
             'message' => 'Data Transaksi berhasil ditambahkan!!'
         ]);
     }
+    //  if (empty($request->total)) {
+    //         Alert::error('Oops...', 'Please Add Service Packet');
+    //         return back();
+    //     }
+
+    //     $order = TransOrders::create([
+    //         'id_customer' => $request->id_customer,
+    //         'order_code' => $request->order_code,
+    //         'order_date' => Carbon::now(),
+    //         'order_end_date' => Carbon::now()->addDays(2),
+    //         'order_note' => $request->order_note,
+    //         'total' => $request->total
+    //     ]);
+
+    //     $id_order = $order->id;
+    //     foreach ($request->id_service as $index => $idService) {
+    //         try {
+    //             $request->notes[$index];
+    //             TransOrderDetails::create([
+    //                 'id_order' => $id_order,
+    //                 'id_service' => $idService,
+    //                 'qty' => $request->qty[$index] * 1000,
+    //                 'subtotal' => $request->subtotal[$index],
+    //                 'notes' => $request->notes[$index]
+    //             ]);
+    //         } catch (\Throwable $th) {
+    //             TransOrderDetails::create([
+    //                 'id_order' => $id_order,
+    //                 'id_service' => $idService,
+    //                 'qty' => $request->qty[$index] * 1000,
+    //                 'subtotal' => $request->subtotal[$index],
+
+    //             ]);
+    //         }
+    //     }
+
+    //     Alert::success('Excellent', 'Add order data successfully');
+    //     return redirect()->route('order.index')->with('success', 'Add order data successfully');
+    // }
+
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $title = "Transaction Order";
-        $order = TransOrders::with(['customer', 'details.service'])->findOrFail($id);
-        // dd($order->details);
-        return view('order.show', compact('title', 'order'));
+        try {
+            $order = TransOrders::with([
+                'customer' => fn($q) => $q->withTrashed(),
+                'transOrderDetails.typeOfService',
+                'transLaundryPickups'
+            ])->findOrFail($id);
+
+            return view('order.show', compact('order'));
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('order.index')
+                ->with('error_message', 'Gagal memuat detail order: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -142,4 +191,14 @@ class TransOrderController extends Controller
     //     $prices = $layanan->pluck('price', 'service_name');
     //     return response()->json($prices);
     // }
+
+    public function getOrders()
+{
+    $orders = TransOrders::with(['customer', 'details.service'])
+        ->orderBy('id', 'desc')
+        ->get();
+
+    return response()->json($orders);
+}
+
 }
