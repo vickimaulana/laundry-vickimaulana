@@ -201,4 +201,60 @@ class TransOrderController extends Controller
     return response()->json($orders);
 }
 
+ public function getSingleOrder($id)
+{
+    $order = TransOrders::with(['customer', 'details.service'])->where('id', $id)->first();
+
+    return response()->json($order);
+}
+public function updateOrderStatus(Request $request, $id)
+    {
+        $order = TransOrders::findOrFail($id);
+        $order->order_status = $request->order_status;
+        $order->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order status updated successfully!'
+        ]);
+    }
+
+public function reportsJson()
+{
+    $orders = TransOrders::with(['details.service'])->get();
+
+    $today = now();
+    $thisMonth = $today->month;
+    $thisYear = $today->year;
+
+    $monthlyTransactions = $orders->filter(function ($order) use ($thisMonth, $thisYear) {
+        $date = \Carbon\Carbon::parse($order->order_date);
+        return $date->month == $thisMonth && $date->year == $thisYear;
+    });
+
+    $monthlyRevenue = $monthlyTransactions->sum('total');
+
+    $serviceStats = [];
+    foreach ($orders as $order) {
+        foreach ($order->details as $detail) {
+            $serviceName = $detail->service->service_name ?? '-';
+            if (!isset($serviceStats[$serviceName])) {
+                $serviceStats[$serviceName] = [
+                    'count' => 0,
+                    'revenue' => 0
+                ];
+            }
+            $serviceStats[$serviceName]['count']++;
+            $serviceStats[$serviceName]['revenue'] += $detail->subtotal;
+        }
+    }
+
+    return response()->json([
+        'totalTransactions' => $orders->count(),
+        'monthlyTransactions' => $monthlyTransactions->count(),
+        'monthlyRevenue' => $monthlyRevenue,
+        'serviceStats' => $serviceStats
+    ]);
+}
+
 }
