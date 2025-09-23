@@ -578,6 +578,7 @@
         </div>
     </div>
 
+     {{-- BAGIAN JAVASCRIPT --}}
     <script>
         document.getElementById("customerName").addEventListener("change", function() {
             const selected = this.options[this.selectedIndex];
@@ -587,6 +588,7 @@
         });
     </script>
 
+    //    API process transaction
     <script>
         let cart = [];
         let transactions = [];
@@ -614,6 +616,8 @@
             const customerId = document.getElementById("customerId").value;
             const customerAddress = document.getElementById("customerAddress").value;
 
+            //  JIKA DATA KURANG LENGKAP
+          
             if (!customerName || !customerPhone || cart.length === 0) {
                 alert(
                     "Mohon lengkapi data pelanggan dan pastikan ada item di keranjang!"
@@ -637,7 +641,7 @@
                 status: 0,
             };
 
-            //masuk ke database
+            //masuk ke database dan menyimpan transaksi
             try {
                 const res = await fetch("{{ route('order.store') }}", {
                     method: "POST",
@@ -657,16 +661,18 @@
                 const result = await res.json();
                 alert("Transaksi berhasil disimpan!");
 
-                // Show Receipt
+                // Show Receipt menampilkan
                 showReceipt(transaction);
                 loadOrders();
                 clearCart();
 
+                // Clear form and cart mengapus dan mengosongkan hasil input
             } catch (error) {
                 console.error("Gagal Menyimpan Data Transaksi: ", error)
             }
         }
 
+        //  MENAMBAHKAN ITEM KE CART BAGIAN STRUK
         function showReceipt(transaction) {
             const receiptHtml = `
                 <div class="receipt">
@@ -728,14 +734,17 @@
             document.getElementById("transactionModal").style.display = "block";
         }
 
+         //CETAK STRUK
         function printReceipt() {
             window.print();
         }
 
+            //Mendedit format nomor telepon
         function formatPhoneNumberDynamic(number) {
             return number.match(/.{1,4}/g).join("-");
         }
 
+        //format tanggal
         function formatDateYMD(date = new Date()) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -744,6 +753,7 @@
             return `${year}${month}${day}`;
         }
 
+        // keseluruhan transaksi di transaksi histori
         function updateTransactionHistory() {
             const historyContainer = document.getElementById("transactionHistory");
             const recentTransactions = transactions.slice(-5).reverse();
@@ -785,6 +795,7 @@
             historyContainer.innerHTML = html || "<p>Belum ada transaksi</p>";
         }
 
+        // status pengambilan atau perubahan barang yang diambil
         function getStatusText(status) {
             const statusMap = {
                 pending: "Menunggu",
@@ -795,6 +806,7 @@
             return statusMap[status] || status;
         }
 
+        // memperbarui statistik transaksi di dashboard/webpage berdasarkan data yang di proses
         function updateStats() {
             const totalTransactions = transactions.length;
             const totalRevenue = transactions.reduce((sum, t) => sum + t.total, 0);
@@ -815,6 +827,7 @@
                 completedOrders;
         }
 
+        // fungsi ini membuat daftar semua transaksi
         function showAllTransactions() {
             const allTransactionsHtml = `
                 <h2>📋 Semua Transaksi</h2>
@@ -863,7 +876,7 @@
             document.getElementById("transactionModal").style.display = "block";
         }
 
-
+        // fungsi menampilkan laporan
         function showReports() {
             const today = new Date();
             const thisMonth = today.getMonth();
@@ -943,6 +956,7 @@
             document.getElementById("transactionModal").style.display = "block";
         }
 
+        // fungsi mengatur pelayanan
         function manageServices() {
             const servicesHtml = `
                 <h2>⚙️ Kelola Layanan</h2>
@@ -1008,6 +1022,7 @@
             document.getElementById("transactionModal").style.display = "block";
         }
 
+        // menyimpan perubahan status transaksi menggunakan API
         async function updateTransactionStatus(transactionId) {
             try {
                 // Ambil data transaksi dari database
@@ -1067,6 +1082,7 @@
             }
         }
 
+         // menyimpan  status transaksi menggunakan API
         async function saveStatusUpdate(transactionId) {
             const newStatus = document.getElementById("newStatus").value;
             try {
@@ -1096,6 +1112,7 @@
             document.getElementById("transactionModal").style.display = "none";
         }
 
+        // mengatur penomoran desimal yang valid
         function formatNumber(input) {
             // Replace comma with dot for decimal separator
             let value = input.value.replace(",", ".");
@@ -1109,23 +1126,24 @@
             input.value = value;
         }
 
+        // mengatur perubhan string angka menjadi desimal
         function parseDecimal(value) {
             // Handle both comma and dot as decimal separator
             return parseFloat(value.toString().replace(",", ".")) || 0;
         }
 
-        // Initialize the application
+        // Menjalankan / memulai aplikasi dari awal supaya siap dipakai
         document.addEventListener("DOMContentLoaded", function() {
             updateTransactionHistory();
             updateStats();
 
-            // Add event listener for weight input to handle decimal with comma
+            // Aambahkan pendengar/perintah pada kolom input berat supaya angka desimal bisa pakai koma
             const weightInput = document.getElementById("serviceWeight");
             weightInput.addEventListener("input", function() {
                 formatNumber(this);
             });
 
-            // Close modal when clicking outside
+            // Close modal when clicking outside atau tutup jendelan modal
             window.onclick = function(event) {
                 const modal = document.getElementById("transactionModal");
                 if (event.target === modal) {
@@ -1134,7 +1152,7 @@
             };
         });
 
-        // Update addToCart function to handle decimal with comma
+        // Perbarui fungsi addToCart supaya bisa menangani angka desimal yang ditulis dengan koma
         function addToCart() {
             const serviceType = document.getElementById("serviceType").value;
             const weightValue = document.getElementById("serviceWeight").value;
@@ -1171,7 +1189,7 @@
             document.getElementById("notes").value = "";
         }
 
-        // Update cart display to show decimal properly
+        // Perbarui tampilan keranjang supaya angka desimal ditampilkan dengan benar.
         function updateCartDisplay() {
             const cartItems = document.getElementById("cartItems");
             const cartSection = document.getElementById("cartSection");
@@ -1194,7 +1212,7 @@
                     "m²" :
                     "kg";
 
-                // Format weight to show decimal properly
+                // Atur tampilan berat supaya angka desimal terlihat dengan benar
                 const formattedWeight =
                     item.weight % 1 === 0 ?
                     item.weight.toString() :
@@ -1222,7 +1240,7 @@
             totalAmount.textContent = `Rp ${total.toLocaleString()}`;
         }
 
-        // Add some sample data for demonstration
+        // Tambahkan data contoh untuk percobaan / demo
         function addSampleData() {
             const sampleTransactions = [{
                     id: "TRX-001",
@@ -1270,7 +1288,7 @@
             }
         }
 
-        //load db transaction
+        //Ambil atau muat data transaksi dari database
         async function loadOrders() {
             try {
                 const response = await fetch('/order-json', {
