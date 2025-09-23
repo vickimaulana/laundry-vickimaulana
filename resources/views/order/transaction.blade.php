@@ -659,12 +659,9 @@
 
                 // Show Receipt
                 showReceipt(transaction);
-                transactionCounter++;
-
-                // Clear form and cart
+                loadOrders();
                 clearCart();
-                updateTransactionHistory();
-                updateStats();
+
             } catch (error) {
                 console.error("Gagal Menyimpan Data Transaksi: ", error)
             }
@@ -693,17 +690,17 @@
                         ${transaction.items
                           .map(
                             (item) => `
-                                    <div class="receipt-item">
-                                        <span>${item.service} (${item.weight} ${
-                                      item.service.includes("Sepatu")
-                                        ? "pasang"
-                                        : item.service.includes("Karpet")
-                                        ? "m²"
-                                        : "kg"
-                                    })</span>
-                                        <span>Rp ${item.subtotal.toLocaleString()}</span>
-                                    </div>
-                                `
+                                            <div class="receipt-item">
+                                                <span>${item.service} (${item.weight} ${
+                                              item.service.includes("Sepatu")
+                                                ? "pasang"
+                                                : item.service.includes("Karpet")
+                                                ? "m²"
+                                                : "kg"
+                                            })</span>
+                                                <span>Rp ${item.subtotal.toLocaleString()}</span>
+                                            </div>
+                                        `
                           )
                           .join("")}
                     </div>
@@ -764,7 +761,7 @@
                                   .map(
                                     (item) =>
                           `${item.service.service_name} - ${item.qty}kg
-                          `
+                                  `
                                   )
                                   .join(", ")}</p>
                                 <p>💰 Rp ${transaction.total.toLocaleString()}</p>
@@ -825,38 +822,38 @@
                     ${transactions
                       .map(
                         (transaction) => `
-                                <div class="transaction-item">
-                                    <h4>${transaction.order_code} - ${
-                                  transaction.customer.customer_name
-                                }</h4>
-                                    <p>📞 ${formatPhoneNumberDynamic(transaction.customer.phone)}</p>
-                                    <p>🛍️ ${transaction.details
-                                      .map(
-                                        (item) =>
-                              `${item.service.service_name} - ${item.qty}kg
+                                        <div class="transaction-item">
+                                            <h4>${transaction.order_code} - ${
+                                          transaction.customer.customer_name
+                                        }</h4>
+                                            <p>📞 ${formatPhoneNumberDynamic(transaction.customer.phone)}</p>
+                                            <p>🛍️ ${transaction.details
+                                              .map(
+                                                (item) =>
+                                      `${item.service.service_name} - ${item.qty}kg
                       `
-                                      )
-                                      .join(", ")}</p>
-                                    <p>💰 Rp ${transaction.total.toLocaleString()}</p>
-                                    <p>📅 ${new Date(transaction.order_date).toLocaleString(
-                                      "id-ID"
-                                    )}</p>
-                                    <span class="status-badge status-${
-                                      transaction.order_status
-                                    }">${
-                                      transaction.order_status == 0
-                                        ? "Baru"
-                                        : transaction.order_status == 1
-                                        ? "Sudah Diambil"
-                                        : ""
-                                    }</span>
-                                    <button class="btn btn-primary" onclick="updateTransactionStatus('${
-                                      transaction.id
-                                    }')" style="margin-top: 10px; padding: 5px 15px; font-size: 12px;">
-                                        📝 Update Status
-                                    </button>
-                                </div>
-                            `
+                                              )
+                                              .join(", ")}</p>
+                                            <p>💰 Rp ${transaction.total.toLocaleString()}</p>
+                                            <p>📅 ${new Date(transaction.order_date).toLocaleString(
+                                              "id-ID"
+                                            )}</p>
+                                            <span class="status-badge status-${
+                                              transaction.order_status
+                                            }">${
+                                              transaction.order_status == 0
+                                                ? "Baru"
+                                                : transaction.order_status == 1
+                                                ? "Sudah Diambil"
+                                                : ""
+                                            }</span>
+                                            <button class="btn btn-primary" onclick="updateTransactionStatus('${
+                                              transaction.id
+                                            }')" style="margin-top: 10px; padding: 5px 15px; font-size: 12px;">
+                                                📝 Update Status
+                                            </button>
+                                        </div>
+                                    `
                       )
                       .join("")}
                 </div>
@@ -897,11 +894,11 @@
                         };
                     }
 
-                    serviceStats[serviceName].count += item.qty;       // jumlah order per layanan
+                    serviceStats[serviceName].count += item.qty; // jumlah order per layanan
                     serviceStats[serviceName].revenue += item.subtotal; // total pendapatan
                 });
             });
-            console.log("A",serviceStats)
+            console.log("A", serviceStats)
 
             const reportsHtml = `
                 <h2>📈 Laporan Penjualan</h2>
@@ -932,12 +929,12 @@
                     </thead>
                     <tbody>
                          ${Object.entries(serviceStats).map(([service, stats]) => `
-                            <tr>
-                                <td>${service}</td>
-                                <td>${stats.count}</td>
-                                <td>Rp ${stats.revenue.toLocaleString()}</td>
-                            </tr>
-                        `).join('')}
+                                    <tr>
+                                        <td>${service}</td>
+                                        <td>${stats.count}</td>
+                                        <td>Rp ${stats.revenue.toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
                     </tbody>
                 </table>
             `;
@@ -1019,15 +1016,21 @@
                     headers: {
                         "Content-Type": "application/json",
                         "Accept": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            "content")
                     },
                 });
                 if (!res.ok) throw new Error("Gagal mengambil data transaksi");
                 const transaction = await res.json();
 
-                const statusOptions = [
-                    { value: "0", text: "Baru" },
-                    { value: "1", text: "Sudah diambil" }
+                const statusOptions = [{
+                        value: "0",
+                        text: "Baru"
+                    },
+                    {
+                        value: "1",
+                        text: "Sudah diambil"
+                    }
                 ];
 
                 const statusHtml = `
@@ -1040,10 +1043,10 @@
                         <label>Pilih Status Baru:</label>
                         <select id="newStatus" style="width: 100%; padding: 10px; margin: 10px 0;">
                             ${statusOptions.map(option => `
-                                <option value="${option.value}" ${transaction.order_status == option.value ? "selected" : ""}>
-                                    ${option.text}
-                                </option>
-                            `).join("")}
+                                        <option value="${option.value}" ${transaction.order_status == option.value ? "selected" : ""}>
+                                            ${option.text}
+                                        </option>
+                                    `).join("")}
                         </select>
                     </div>
                     <div style="text-align: center; margin-top: 20px;">
@@ -1072,9 +1075,12 @@
                     headers: {
                         "Content-Type": "application/json",
                         "Accept": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            "content")
                     },
-                    body: JSON.stringify({ order_status: newStatus })
+                    body: JSON.stringify({
+                        order_status: newStatus
+                    })
                 });
                 if (!res.ok) throw new Error("Gagal update status transaksi");
                 alert("Status berhasil diupdate!");
@@ -1297,34 +1303,32 @@
 
 
         //pickup Barang updateStatus
-      async function pickupOrder(orderId) {
-    try {
-        let response = await fetch(`/order/${orderId}`, {
-            method: "PUT", // sesuai resource controller
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                order_pay: 50000,   // nilai pembayaran
-                order_change: 0     // nilai kembalian
-            })
-        });
+        async function pickupOrder(orderId) {
+            try {
+                let response = await fetch(`/order/${orderId}`, {
+                    method: "PUT", // sesuai resource controller
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        order_pay: 50000, // nilai pembayaran
+                        order_change: 0 // nilai kembalian
+                    })
+                });
 
-        if (!response.ok) {
-            throw new Error("HTTP error!! Status: " + response.status);
+                if (!response.ok) {
+                    throw new Error("HTTP error!! Status: " + response.status);
+                }
+
+                let result = await response.json();
+                console.log(result);
+
+                alert(result.message); // tampilkan pesan sukses
+            } catch (error) {
+                console.error("Gagal pickup:", error);
+            }
         }
-
-        let result = await response.json();
-        console.log(result);
-
-        alert(result.message); // tampilkan pesan sukses
-    } catch (error) {
-        console.error("Gagal pickup:", error);
-    }
-}
-
-
     </script>
 
 </body>

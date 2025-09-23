@@ -193,25 +193,34 @@ class TransOrderController extends Controller
     // }
 
     public function getOrders()
-{
-    $orders = TransOrders::with(['customer', 'details.service'])
-        ->orderBy('id', 'desc')
-        ->get();
+    {
+        $orders = TransOrders::with(['customer', 'details.service'])
+            ->orderBy('id', 'desc')
+            ->get();
 
-    return response()->json($orders);
-}
+        return response()->json($orders);
+    }
 
- public function getSingleOrder($id)
-{
-    $order = TransOrders::with(['customer', 'details.service'])->where('id', $id)->first();
+    public function getSingleOrder($id)
+    {
+        $order = TransOrders::with(['customer', 'details.service'])->where('id', $id)->first();
 
-    return response()->json($order);
-}
-public function updateOrderStatus(Request $request, $id)
+        return response()->json($order);
+    }
+    public function updateOrderStatus(Request $request, $id)
     {
         $order = TransOrders::findOrFail($id);
         $order->order_status = $request->order_status;
         $order->save();
+
+        if ($request->order_status == 1) {
+            TransLaundryPickup::create([
+                'id_order' => $order->id,
+                'id_customer' => $order->id_customer,
+                'pickup_date' => Carbon::now(),
+                'notes' => $request->notes ?? null
+            ]);
+        }
 
         return response()->json([
             'status' => true,
@@ -219,42 +228,42 @@ public function updateOrderStatus(Request $request, $id)
         ]);
     }
 
-public function reportsJson()
-{
-    $orders = TransOrders::with(['details.service'])->get();
+    public function reportsJson()
+    {
+        $orders = TransOrders::with(['details.service'])->get();
 
-    $today = now();
-    $thisMonth = $today->month;
-    $thisYear = $today->year;
+        $today = now();
+        $thisMonth = $today->month;
+        $thisYear = $today->year;
 
-    $monthlyTransactions = $orders->filter(function ($order) use ($thisMonth, $thisYear) {
-        $date = \Carbon\Carbon::parse($order->order_date);
-        return $date->month == $thisMonth && $date->year == $thisYear;
-    });
+        $monthlyTransactions = $orders->filter(function ($order) use ($thisMonth, $thisYear) {
+            $date = \Carbon\Carbon::parse($order->order_date);
+            return $date->month == $thisMonth && $date->year == $thisYear;
+        });
 
-    $monthlyRevenue = $monthlyTransactions->sum('total');
+        $monthlyRevenue = $monthlyTransactions->sum('total');
 
-    $serviceStats = [];
-    foreach ($orders as $order) {
-        foreach ($order->details as $detail) {
-            $serviceName = $detail->service->service_name ?? '-';
-            if (!isset($serviceStats[$serviceName])) {
-                $serviceStats[$serviceName] = [
-                    'count' => 0,
-                    'revenue' => 0
-                ];
+        $serviceStats = [];
+        foreach ($orders as $order) {
+            foreach ($order->details as $detail) {
+                $serviceName = $detail->service->service_name ?? '-';
+                if (!isset($serviceStats[$serviceName])) {
+                    $serviceStats[$serviceName] = [
+                        'count' => 0,
+                        'revenue' => 0
+                    ];
+                }
+                $serviceStats[$serviceName]['count']++;
+                $serviceStats[$serviceName]['revenue'] += $detail->subtotal;
             }
-            $serviceStats[$serviceName]['count']++;
-            $serviceStats[$serviceName]['revenue'] += $detail->subtotal;
         }
-    }
 
-    return response()->json([
-        'totalTransactions' => $orders->count(),
-        'monthlyTransactions' => $monthlyTransactions->count(),
-        'monthlyRevenue' => $monthlyRevenue,
-        'serviceStats' => $serviceStats
-    ]);
-}
+        return response()->json([
+            'totalTransactions' => $orders->count(),
+            'monthlyTransactions' => $monthlyTransactions->count(),
+            'monthlyRevenue' => $monthlyRevenue,
+            'serviceStats' => $serviceStats
+        ]);
+    }
 
 }
