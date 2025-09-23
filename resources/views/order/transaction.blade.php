@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sistem Informasi Laundry - POS</title>
     <style>
       * {
@@ -438,11 +439,13 @@
                 <option value="{{ $customer->customer_name }}"
                     data-phone="{{ $customer->phone }}"
                     data-address="{{ $customer->address }}"
-                    data-id="{{ $customer->id }}"
+                    data-id-customer="{{ $customer->id }}"
                     >{{ $customer->customer_name }}</option>
                 @endforeach
                 </select>
             </div>
+
+            <input type="hidden" id="customerId">
 
             <div class="form-row">
               <div class="form-group">
@@ -616,13 +619,12 @@
     const selected = this.options[this.selectedIndex];
     document.getElementById("customerPhone").value = selected.getAttribute("data-phone") || "";
     document.getElementById("customerAddress").value = selected.getAttribute("data-address") || "";
+    document.getElementById("customerId").value = selected.getAttribute("data-id-customer") || "";
 });
 
 </script>
 
     <script>
-        const prices = @json($services->pluck('price','service_name'));
-        console.log(prices);
         let cart = [];
         let transactions =
         JSON.parse(localStorage.getItem("laundryTransactions")) || [];
@@ -631,84 +633,6 @@
       function addService(serviceName, price) {
         document.getElementById("serviceType").value = serviceName;
         document.getElementById("serviceWeight").focus();
-      }
-
-      function addToCart() {
-        const serviceType = document.getElementById("serviceType").value;
-        const weight = parseFloat(
-          document.getElementById("serviceWeight").value
-        );
-        const notes = document.getElementById("notes").value;
-
-        if (!serviceType || !weight || weight <= 0) {
-          alert("Mohon lengkapi semua field yang diperlukan!");
-          return;
-        }
-
-        const price = prices[serviceType];
-        console.log(price);
-        const subtotal = price * weight;
-
-        const item = {
-          id: Date.now(),
-          service: serviceType,
-          weight: weight,
-          price: price,
-          subtotal: subtotal,
-          notes: notes,
-        };
-
-        cart.push(item);
-        updateCartDisplay();
-
-        // Clear form
-        document.getElementById("serviceType").value = "";
-        document.getElementById("serviceWeight").value = "";
-        document.getElementById("notes").value = "";
-      }
-
-      function updateCartDisplay() {
-        const cartItems = document.getElementById("cartItems");
-        const cartSection = document.getElementById("cartSection");
-        const totalAmount = document.getElementById("totalAmount");
-
-        if (cart.length === 0) {
-          cartSection.style.display = "none";
-          return;
-        }
-
-        cartSection.style.display = "block";
-
-        let html = "";
-        let total = 0;
-
-        cart.forEach((item) => {
-          html += `
-                    <tr>
-                        <td>${item.service}</td>
-                        <td>${item.weight} ${
-            item.service.includes("Sepatu")
-              ? "pasang"
-              : item.service.includes("Karpet")
-              ? "m²"
-              : "kg"
-          }</td>
-                        <td>Rp ${item.price.toLocaleString()}</td>
-                        <td>Rp ${item.subtotal.toLocaleString()}</td>
-                        <td>
-                            <button class="btn btn-danger" onclick="removeFromCart(${
-                              item.id
-                            })" style="padding: 5px 10px; font-size: 12px;">
-                                🗑️
-                            </button>
-                        </td>
-                    </tr>
-                `;
-          total += item.subtotal;
-        });
-
-        cartItems.innerHTML = html;
-        totalAmount.textContent = `Rp ${total.toLocaleString()}`;
       }
 
       function removeFromCart(itemId) {
@@ -722,11 +646,11 @@
         document.getElementById("transactionForm").reset();
       }
 
-      function processTransaction() {
+      async function processTransaction() {
         const customerName = document.getElementById("customerName").value;
         const customerPhone = document.getElementById("customerPhone").value;
-        const customerAddress =
-          document.getElementById("customerAddress").value;
+        const customerId = document.getElementById("customerId").value;
+        const customerAddress = document.getElementById("customerAddress").value;
 
         if (!customerName || !customerPhone || cart.length === 0) {
           alert(
@@ -740,6 +664,7 @@
         const transaction = {
           id: `TRX-${transactionCounter.toString().padStart(3, "0")}`,
           customer: {
+            id: customerId,
             name: customerName,
             phone: customerPhone,
             address: customerAddress,
@@ -747,24 +672,41 @@
           items: [...cart],
           total: total,
           date: new Date().toISOString(),
-          status: "pending",
+          status: 0,
         };
 
-        transactions.push(transaction);
-        localStorage.setItem(
-          "laundryTransactions",
-          JSON.stringify(transactions)
-        );
+            //masuk ke database
+        try {
+            const res = await fetch("{{ route('order.store') }}",{
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            "content")
+                    },
+                    body: JSON.stringify(transaction)
+                }
+            )
 
-        transactionCounter++;
+             if (!res.ok) {
+                    throw new Error(`HTTP error!! Status: ${res.status}`)
+                }
 
-        // Show receipt
-        showReceipt(transaction);
+                const result = await res.json();
+                alert("Transaksi berhasil disimpan!");
 
-        // Clear form and cart
-        clearCart();
-        updateTransactionHistory();
-        updateStats();
+                // Show Receipt
+                showReceipt(transaction);
+                transactionCounter++;
+
+                // Clear form and cart
+                clearCart();
+                updateTransactionHistory();
+                updateStats();
+        } catch (error) {
+            console.error("Gagal Menyimpan Data Transaksi: ", error)
+        }
       }
 
       function showReceipt(transaction) {
@@ -781,7 +723,7 @@
                     <div style="margin-bottom: 20px;">
                         <strong>Pelanggan:</strong><br>
                         ${transaction.customer.name}<br>
-                        ${transaction.customer.phone}<br>
+                        $ ${formatPhoneNumberDynamic(transaction.customer.phone)}<br>
                         ${transaction.customer.address}
                     </div>
 
@@ -831,6 +773,17 @@
       function printReceipt() {
         window.print();
       }
+       function formatPhoneNumberDynamic(number) {
+            return number.match(/.{1,3}/g).join("-");
+        }
+
+        function formatDateYMD(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+
+            return `${year}${month}${day}`;
+        }
 
       function updateTransactionHistory() {
         const historyContainer = document.getElementById("transactionHistory");
@@ -841,7 +794,7 @@
             (transaction) => `
                 <div class="transaction-item">
                     <h4>${transaction.id} - ${transaction.customer.name}</h4>
-                    <p>📞 ${transaction.customer.phone}</p>
+                    <p>📞${formatPhoneNumberDynamic(transaction.customer.phone)}</p>
                     <p>🛍️ ${transaction.items
                       .map(
                         (item) =>
@@ -910,7 +863,7 @@
                             <h4>${transaction.id} - ${
                           transaction.customer.name
                         }</h4>
-                            <p>📞 ${transaction.customer.phone}</p>
+                            <p>📞 ${formatPhoneNumberDynamic(transaction.customer.phone)}</p>
                             <p>🛍️ ${transaction.items
                               .map(
                                 (item) =>
@@ -1210,13 +1163,15 @@
           return;
         }
 
+        const services = @json($services);
+        const service = services.find(service => service.service_name === serviceType)
 
-
-        const price = prices[serviceType];
+        const price = parseFloat(service.price);
         const subtotal = price * weight;
 
         const item = {
           id: Date.now(),
+          id_service: service.id,
           service: serviceType,
           weight: weight,
           price: price,
@@ -1338,7 +1293,7 @@
       }
 
       // Initialize with sample data
-      addSampleData();
+    //   addSampleData();
     </script>
 
   </body>
