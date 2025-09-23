@@ -873,7 +873,7 @@
             const thisYear = today.getFullYear();
 
             const monthlyTransactions = transactions.filter((t) => {
-                const tDate = new Date(t.date);
+                const tDate = new Date(t.order_date);
                 return (
                     tDate.getMonth() === thisMonth && tDate.getFullYear() === thisYear
                 );
