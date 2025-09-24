@@ -30,6 +30,7 @@
                                 <td>{{ date('d F Y', strtotime($order->order_end_date)) }}</td>
                                 <td class="{{ $order->order_status == 0 ? 'text-info' : 'text-success' }}">{{ $order->status_text }}</td>
                                 <td>2,5%</td>
+                                <td>
                                     <a href="{{ route('print_struk', $order->id) }}" class="btn btn-success btn-sm">Print</a>
                                     <form action="{{ route('order.destroy', $order->id) }}" method="post" id="delete-form-{{ $order->id }}" class="d-inline">
                                         @csrf

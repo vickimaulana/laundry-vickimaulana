@@ -714,8 +714,8 @@
                           )
                           .join("")}
                           <div class="receipt-item">
-                              <strong style="margin-top: 5px">TAX:</strong>
-                              <span>2.5%</span>
+                              <strong style="margin-top: 5px">TAX:2,5%</strong>
+                              <span>Rp Rp ${pajak.toLocaleString()}</span>
                           </div>
                     </div>
 

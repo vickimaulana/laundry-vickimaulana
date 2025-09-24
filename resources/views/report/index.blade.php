@@ -53,6 +53,12 @@
                                 </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="4" class="text-end">Total Pendapatan</th>
+                                    <th class="text-end">Rp {{ number_format($orders->sum('total'))}}</th>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
