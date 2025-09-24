@@ -520,6 +520,8 @@
                     <div class="total-section">
                         <h3>Total Pembayaran</h3>
                         <div class="total-amount" id="totalAmount">Rp 0</div>
+                        <h3 style="margin-top: 1rem;">Pajak</h3>
+                        <div class="total-amount" id="taxAmount">Rp 0</div>
                         <button class="btn btn-success" onclick="processTransaction()"
                             style="width: 100%; margin-top: 15px">
                             💳 Proses Transaksi
@@ -617,8 +619,6 @@
             const customerPhone = document.getElementById("customerPhone").value;
             const customerId = document.getElementById("customerId").value;
             const customerAddress = document.getElementById("customerAddress").value;
-            const tax = 0.4;
-            let after tax= 0;
 
             //  JIKA DATA KURANG LENGKAP
 
@@ -629,10 +629,7 @@
                 return;
             }
 
-            const total = cart.reduce((sum, item) => sum + item.subtotal , 0);
-            const tax = Math.round(total * TAX_PERCENT / 100);
-            const grandTotal = total + tax;
-
+            const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
             const transaction = {
                 id: `TRX-${transactionCounter.toString().padStart(3, "0")}`,
@@ -643,8 +640,7 @@
                     address: customerAddress,
                 },
                 items: [...cart],
-                total: total,
-                tax: tax,
+                total: total + (total*0.025),
                 date: new Date().toISOString(),
                 status: 0,
             };
@@ -695,7 +691,7 @@
                     <div style="margin-bottom: 20px;">
                         <strong>Pelanggan:</strong><br>
                         ${transaction.customer.name}<br>
-                        $ ${formatPhoneNumberDynamic(transaction.customer.phone)}<br>
+                        ${formatPhoneNumberDynamic(transaction.customer.phone)}<br>
                         ${transaction.customer.address}
                     </div>
 
@@ -717,6 +713,10 @@
                                         `
                           )
                           .join("")}
+                          <div class="receipt-item">
+                              <strong style="margin-top: 5px">TAX:</strong>
+                              <span>2.5%</span>
+                          </div>
                     </div>
 
                     <div class="receipt-total">
@@ -1168,7 +1168,6 @@
             const weight = parseDecimal(weightValue);
             const notes = document.getElementById("notes").value;
 
-
             if (!serviceType || !weightValue || weight <= 0) {
                 alert("Mohon lengkapi semua field yang diperlukan!");
                 return;
@@ -1178,7 +1177,7 @@
             const service = services.find(service => service.service_name === serviceType)
 
             const price = parseFloat(service.price);
-            const subtotal = price * weight + tax;
+            const subtotal = price * weight;
 
             const item = {
                 id: Date.now(),
@@ -1204,7 +1203,8 @@
             const cartItems = document.getElementById("cartItems");
             const cartSection = document.getElementById("cartSection");
             const totalAmount = document.getElementById("totalAmount");
-            const totalTax =
+            const taxAmount = document.getElementById("taxAmount");
+
             if (cart.length === 0) {
                 cartSection.style.display = "none";
                 return;
@@ -1247,7 +1247,11 @@
             });
 
             cartItems.innerHTML = html;
+            pajak= total * 0.025;
+
             totalAmount.textContent = `Rp ${total.toLocaleString()}`;
+            taxAmount.textContent = `Rp ${pajak.toLocaleString()}`;
+
         }
 
         // Tambahkan data contoh untuk percobaan / demo
@@ -1358,7 +1362,6 @@
                 console.error("Gagal pickup:", error);
             }
         }
-
 
     </script>
 
