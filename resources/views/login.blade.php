@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-
+  <!-- SweetAlert CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -37,6 +38,33 @@
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
 </head>
+<style>
+  body {
+    min-height: 100vh;
+    position: relative;
+    background: linear-gradient(-45deg, #00f8ae, #493b86, #008deb, #7d66ff);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease infinite;
+  }
+  @keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+  }
+  .bg-overlay {
+    display: none; /* tidak perlu overlay jika pakai gradient */
+  }
+  main, .card {
+    position: relative;
+    z-index: 1;
+  }
+  .card {
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 8px 32px 0 rgba(96, 97, 109, 0.37);
+    border-radius: 16px;
+    backdrop-filter: blur(2px);
+  }
+</style>
 
 <body>
 
@@ -51,7 +79,7 @@
               <div class="d-flex justify-content-center py-4">
                 <a href="index.html" class="logo d-flex align-items-center w-auto">
                   <img src="assets/img/logo.png" alt="">
-                  <span class="d-none d-lg-block">Login Form</span>
+                  <span class="d-none d-lg-block">Laundry Vicki</span>
                 </a>
               </div><!-- End Logo -->
 
@@ -113,9 +141,34 @@
   <script src="{{ asset('assets/vendor/tinymce/tinymce.min.js') }}"></script>
   <script src="{{ asset('assets/vendor/php-email-form/validate.js') }}"></script>
 
+  <script>
+  @if(session('success'))
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: '{{ session('success') }}',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  @endif
+
+  @if($errors->any())
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      html: `
+        @foreach ($errors->all() as $error)
+          {{ $error }}<br>
+        @endforeach
+      `,
+      timer: 3000
+    });
+  @endif
+</script>
+
   <!-- Template Main JS File -->
   <script src="{{ asset('assets/js/main.js') }}"></script>
-  @include('sweetalert::alert', ['cdn' => "https://cdn.jsdelivr.net/npm/sweetalert2@11"])
+
 
 </body>
 

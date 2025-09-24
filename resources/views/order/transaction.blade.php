@@ -15,7 +15,7 @@
 
         body {
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #26c9c1 0%, #3fc7df 100%);
             min-height: 100vh;
             color: #333;
         }
@@ -98,7 +98,7 @@
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #01000c;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
@@ -121,7 +121,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2201b3 0%, #420481 100%);
             color: white;
         }
 
@@ -168,7 +168,7 @@
         }
 
         .service-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4b07eb 0%, #370569 100%);
             color: white;
             padding: 20px;
             border-radius: 12px;
@@ -217,7 +217,7 @@
         }
 
         .total-section {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            background: linear-gradient(135deg, #21636e 0%, #38a169 100%);
             color: white;
             padding: 20px;
             border-radius: 12px;
@@ -561,9 +561,11 @@
             <button class="btn btn-primary" onclick="showReports()" style="margin: 0 10px">
                 📈 Laporan Penjualan
             </button>
-            {{-- <button class="btn btn-warning" onclick="manageServices()" style="margin: 0 10px">
-                ⚙️ Kelola Layanan
-            </button> --}}
+         <button class="btn btn-success" style="margin: 0 10px">
+                <a href="{{ route('order.index') }}" style="text-decoration: none; color: white;">
+                    🏠 Kembali ke Transaksi
+                </a>
+            </button>
             <button class="btn btn-danger" onclick="clearCart()" style="margin: 0 10px">
                 🗑️ Bersihkan Keranjang
             </button>
@@ -617,7 +619,7 @@
             const customerAddress = document.getElementById("customerAddress").value;
 
             //  JIKA DATA KURANG LENGKAP
-          
+
             if (!customerName || !customerPhone || cart.length === 0) {
                 alert(
                     "Mohon lengkapi data pelanggan dan pastikan ada item di keranjang!"
@@ -1344,6 +1346,7 @@
 
                 alert(result.message); // tampilkan pesan sukses
             } catch (error) {
+                alert(error, 'Gagal update pickup')
                 console.error("Gagal pickup:", error);
             }
         }
