@@ -617,6 +617,8 @@
             const customerPhone = document.getElementById("customerPhone").value;
             const customerId = document.getElementById("customerId").value;
             const customerAddress = document.getElementById("customerAddress").value;
+            const tax = 0.4;
+            let after tax= 0;
 
             //  JIKA DATA KURANG LENGKAP
 
@@ -627,7 +629,10 @@
                 return;
             }
 
-            const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
+            const total = cart.reduce((sum, item) => sum + item.subtotal , 0);
+            const tax = Math.round(total * TAX_PERCENT / 100);
+            const grandTotal = total + tax;
+
 
             const transaction = {
                 id: `TRX-${transactionCounter.toString().padStart(3, "0")}`,
@@ -639,6 +644,7 @@
                 },
                 items: [...cart],
                 total: total,
+                tax: tax,
                 date: new Date().toISOString(),
                 status: 0,
             };
@@ -679,7 +685,7 @@
             const receiptHtml = `
                 <div class="receipt">
                     <div class="receipt-header">
-                        <h2>🧺 LAUNDRY RECEIPT</h2>
+                        <h2>🧺 LAUNDRY VICKI</h2>
                         <p>ID: ${transaction.id}</p>
                         <p>Tanggal: ${new Date(transaction.date).toLocaleString(
                           "id-ID"
@@ -884,6 +890,7 @@
             const thisMonth = today.getMonth();
             const thisYear = today.getFullYear();
 
+
             const monthlyTransactions = transactions.filter((t) => {
                 const tDate = new Date(t.order_date);
                 return (
@@ -910,7 +917,7 @@
                     }
 
                     serviceStats[serviceName].count += item.qty; // jumlah order per layanan
-                    serviceStats[serviceName].revenue += item.subtotal; // total pendapatan
+                    serviceStats[serviceName].revenue += item.subtotal  // total pendapatan
                 });
             });
             console.log("A", serviceStats)
@@ -1161,6 +1168,7 @@
             const weight = parseDecimal(weightValue);
             const notes = document.getElementById("notes").value;
 
+
             if (!serviceType || !weightValue || weight <= 0) {
                 alert("Mohon lengkapi semua field yang diperlukan!");
                 return;
@@ -1170,7 +1178,7 @@
             const service = services.find(service => service.service_name === serviceType)
 
             const price = parseFloat(service.price);
-            const subtotal = price * weight;
+            const subtotal = price * weight + tax;
 
             const item = {
                 id: Date.now(),
@@ -1196,7 +1204,7 @@
             const cartItems = document.getElementById("cartItems");
             const cartSection = document.getElementById("cartSection");
             const totalAmount = document.getElementById("totalAmount");
-
+            const totalTax =
             if (cart.length === 0) {
                 cartSection.style.display = "none";
                 return;
@@ -1350,6 +1358,8 @@
                 console.error("Gagal pickup:", error);
             }
         }
+
+
     </script>
 
 </body>

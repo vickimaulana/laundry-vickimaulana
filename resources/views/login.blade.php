@@ -38,33 +38,39 @@
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
 </head>
-<style>
-  body {
-    min-height: 100vh;
-    position: relative;
-    background: linear-gradient(-45deg, #00f8ae, #493b86, #008deb, #7d66ff);
-    background-size: 400% 400%;
-    animation: gradientBG 12s ease infinite;
-  }
-  @keyframes gradientBG {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
-  }
-  .bg-overlay {
-    display: none; /* tidak perlu overlay jika pakai gradient */
-  }
-  main, .card {
-    position: relative;
-    z-index: 1;
-  }
-  .card {
-    background: rgba(255,255,255,0.9);
-    box-shadow: 0 8px 32px 0 rgba(96, 97, 109, 0.37);
-    border-radius: 16px;
-    backdrop-filter: blur(2px);
-  }
-</style>
+<!-- filepath: c:\xampp\htdocs\angkatan3_2025\WEB_VICKIMAULANA_LAUNDRY\resources\views\login.blade.php -->
+<head>
+  <!-- ...existing code... -->
+  <style>
+    body {
+      background: url('{{ asset('assets/img/loundry-HD.jpg') }}') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      min-height: 100vh;
+    }
+    .bg-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.5); /* gelap transparan */
+      z-index: 0;
+    }
+    main, .card {
+      position: relative;
+      z-index: 1;
+    }
+    .card {
+      background: rgba(255,255,255,0.9); /* card transparan */
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      border-radius: 16px;
+      backdrop-filter: blur(2px);
+    }
+  </style>
+  <!-- ...existing code... -->
+</head>
+<body>
+  <div class="bg-overlay"></div>
+  <!-- ...existing code... -->
+</body>
 
 <body>
 
